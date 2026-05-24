@@ -17,9 +17,9 @@ set(TEST_BIN_DIR "${CMAKE_CURRENT_BINARY_DIR}/bin")
 file(MAKE_DIRECTORY "${TEST_BIN_DIR}")
 
 foreach(name ${TEST_PROGRAMS})
-    add_executable(test_${name} "${CMAKE_CURRENT_SOURCE_DIR}/${name}.c")
-    target_link_options(test_${name} PRIVATE -static)
-    set_target_properties(test_${name} PROPERTIES
+    add_executable(${name} "${CMAKE_CURRENT_SOURCE_DIR}/${name}.c")
+    target_link_options(${name} PRIVATE -static)
+    set_target_properties(${name} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${TEST_BIN_DIR}"
     )
 endforeach()
