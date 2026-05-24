@@ -2,8 +2,6 @@
 
 [![C++17](https://img.shields.io/badge/C%2B%2B-17-blue.svg)](https://en.cppreference.com/w/cpp/17)
 [![Linux](https://img.shields.io/badge/Linux-5.0%2B-orange.svg)](https://kernel.org)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-
 CPPJUDGE 是一个基于 Linux 内核特性的高性能沙箱判题机。通过 namespace 隔离、cgroups 资源控制、chroot 文件系统隔离和 seccomp 系统调用过滤，为不可信代码提供安全的执行环境。适用于 OJ（Online Judge）系统、代码评测平台和自动化测试场景。
 
 ## 特性
@@ -291,22 +289,42 @@ CPPJUDGE/
 
 ## 测试
 
+### 自动测试（推荐）
+
+项目内置自动化测试套件，覆盖全部 8 种沙箱状态：
+
+```bash
+# 方式 1：CMake + CTest
+mkdir build && cd build
+cmake .. -DBUILD_TESTING=ON
+make -j$(nproc)
+ctest --output-on-failure
+
+# 方式 2：独立脚本（无需 CMake，需 gcc）
+./tests/run_tests.sh
+```
+
+测试用例：
+
+| 用例 | 程序 | 预期状态 |
+|---|---|---|
+| Normal exit 0 | `tests/ok.c` | OK |
+| Non-zero exit | `tests/nonzero_exit.c` | NONZERO_EXIT |
+| Segfault | `tests/segfault.c` | SIGNALED |
+| TLE (死循环) | `tests/tle.c` | TIME_LIMIT_EXCEEDED |
+| MLE (128MB 申请) | `tests/mle.c` | MEMORY_LIMIT_EXCEEDED |
+| OLE (大量输出) | `tests/ole.c` | OUTPUT_LIMIT_EXCEEDED |
+| Seccomp 拦截 | `tests/seccomp_violation.c` | SIGNALED |
+| Wall-time 超限 | `tests/ok.c` + 极短墙钟 | WALL_TIME_EXCEEDED |
+
+### 手动测试
+
 ```bash
 # 编译测试程序
 gcc -static -o /tmp/test_hello test.c
 
 # 基础功能测试
 ./build/simple_judge --time-limit 1000 --memory-limit 131072 /tmp/test_hello
-
-# 超时测试
-./build/simple_judge --time-limit 500 /tmp/test_spin
-
-# 内存限制测试（32MB）
-./build/simple_judge --memory-limit 32768 /tmp/test_mem_heavy
-
-# 网络隔离测试（应返回 SIGNALED signal 31）
-./build/simple_judge /tmp/test_network
-```
 
 ## 已知限制
 
@@ -315,10 +333,6 @@ gcc -static -o /tmp/test_hello test.c
 3. **cgroups v2 权限** — 非 root 用户需 cgroup 委托（systemd `Delegate=yes`），否则回退到 `RLIMIT_AS`
 4. **管道缓冲区** — stdout/stderr 写入超过 `PIPE_BUF`（默认 64KB）会阻塞子进程，依赖墙钟时间超时终止
 5. **x86_64 only** — seccomp 过滤器包含架构白名单（`AUDIT_ARCH_X86_64`），不支持 ARM/AArch64
-
-## License
-
-MIT License
 
 ---
 

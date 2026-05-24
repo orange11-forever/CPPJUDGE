@@ -30,3 +30,10 @@ target_link_libraries(ojsandbox PUBLIC Threads::Threads)
 
 add_executable(simple_judge examples/main.cpp)
 target_link_libraries(simple_judge ojsandbox)
+
+# --- testing ---
+option(BUILD_TESTING "Build and register the test suite" ON)
+if(BUILD_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
