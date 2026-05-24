@@ -19,6 +19,8 @@ add_library(ojsandbox STATIC
     src/chroot.cpp
     src/seccomp.cpp
     src/errors.cpp
+    src/config.cpp
+    src/result.cpp
 )
 
 target_include_directories(ojsandbox PUBLIC
